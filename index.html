@@ -4,7 +4,7 @@
 <title>Love Heart</title>
 <style>html,body{margin:0;height:100%;background:#060208;overflow:hidden}canvas{display:block;width:100vmin;height:100vmin;margin:auto;position:absolute;inset:0}</style>
 </head><body><canvas id="c"></canvas><script>
-const SC=21,OY=20,DURATION=10,ANIM=42,LIFT=0,GAP=7,SIZES=[9,10,11,12],BG="#060208",W=800;
+const SC=21,OY=20,DURATION=10,ANIM=42,LIFT=34,GAP=7,SIZES=[9,10,11,12],BG="#060208",W=800;
 const PX=4/3; // tk points -> css px
 const cv=document.getElementById("c"),ctx=cv.getContext("2d");
 const dpr=Math.min(devicePixelRatio||1,3);
@@ -53,10 +53,8 @@ function build(){
   const inner=placed.filter(p=>!p.edge);inner.forEach(p=>p.k=-p.rad+uni(0,.08));inner.sort((a,b)=>a.k-b.k);
   return edges.concat(inner);
 }
-function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-let doneAt=0;
 const BGC=[1,3,5].map(i=>parseInt(BG.substr(i,2),16)/255),FLASH=[1,.78,.78];
-const ORDER=shuf(build()).map(p=>({...p,f:-1,dx:0,flash:0}));
+const ORDER=build().map(p=>({...p,f:-1,dx:uni(-10,10),flash:0}));
 const RATE=ORDER.length/(DURATION*1000/16);
 let acc=0,spawned=0,last=performance.now(),shimmerAt=0,shim=null;
 function state(p){ // returns {px,py,col,halo,shadow}
@@ -74,9 +72,6 @@ function frame(now){
   const k=cv.width/W;
   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=BG;ctx.fillRect(0,0,cv.width,cv.height);
   ctx.setTransform(k,0,0,k,cv.width/2,cv.height/2);ctx.textAlign="center";ctx.textBaseline="middle";
-  if(spawned>=ORDER.length&&ORDER[ORDER.length-1].f>=ANIM){if(!doneAt)doneAt=now;
-    const a=clamp((now-doneAt)/2500);ctx.save();ctx.beginPath();POLY.forEach(([x,y],i)=>i?ctx.lineTo(x,-y):ctx.moveTo(x,-y));ctx.closePath();
-    ctx.fillStyle=`rgba(230,13,36,${.10*a})`;ctx.fill();ctx.shadowColor="#ff1530";ctx.shadowBlur=30*k*a;ctx.strokeStyle=`rgba(255,40,60,${.8*a})`;ctx.lineWidth=2;ctx.stroke();ctx.restore()}
   for(let i=0;i<spawned;i++){const p=ORDER[i],s=state(p),b=p.size*PX;
     if(s.u<1&&p.f<=0)continue;
     ctx.font=fnt(p.size);ctx.fillStyle=hx(s.shadow);ctx.fillText(p.text,s.sx+2,s.sy+3);
